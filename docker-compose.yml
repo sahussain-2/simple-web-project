@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: testdb
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+    networks:
+      - webnet
+
+  app:
+    build:
+      context: ./app
+    container_name: flask_app
+    ports:
+      - "5001:5000"
+    depends_on:
+      - db
+    networks:
+      - webnet
+
+  web:
+    image: nginx:latest
+    container_name: nginx_server
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - webnet
+
+networks:
+  webnet:
